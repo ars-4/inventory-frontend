@@ -1,18 +1,25 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
-  </div>
+  <h1>Hello</h1>
+  <span v-for="item in data" :key="item">{{ item }}</span>
+  <button @click="add_to_cart($event)">Click</button>
 </template>
 
-<script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import HelloWorld from '@/components/HelloWorld.vue'; // @ is an alias to /src
+<script>
 
-@Options({
-  components: {
-    HelloWorld,
-  },
-})
-export default class HomeView extends Vue {}
+  import { defineComponent } from 'vue';
+
+  export default defineComponent({
+    data() {
+      return {
+        msg: "Hello",
+        data: []
+      }
+    },
+    methods: {
+      add_to_cart: function(e) {
+        this.data.push(e.target.innerHTML)
+      }
+    }
+  })
+
 </script>
