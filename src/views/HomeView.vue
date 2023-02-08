@@ -1,7 +1,5 @@
 <template>
   <h1>Hello</h1>
-  <span v-for="item in data" :key="item">{{ item }}</span>
-  <button @click="add_to_cart($event)">Click</button>
 </template>
 
 <script>
