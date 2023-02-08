@@ -1,0 +1,113 @@
+@import url('bootstrap.min.css');
+@import url('fonts/stylesheet.css');
+
+
+body {
+    font-family: Rubik;
+    /* background-image: url('../images/Ab-Pyr.jpg'); */
+    background-size: cover;
+}
+
+:root {
+    --theme-front:#42b983;
+    /* --theme-front: #f44336; */
+    --theme-back: #242424;
+}
+
+
+nav {
+    background-color: #242424;
+    padding: 20px;
+    position: fixed;
+    top:0;
+    left:0;
+    width: 100%;
+    z-index: 1;
+}
+nav .navbar {
+    display: flex;
+    justify-content: left;
+}
+nav .navbar a {
+    background-color: #242424;
+    color: var(--theme-front);
+    margin-left: 14px;
+}
+nav .navbar a:hover {
+    background-color: var(--theme-front);
+    color: #242424;
+}
+nav .navbar a.router-link-exact-active {
+    color: #242424;
+    background-color: var(--theme-front);
+}
+
+
+
+.main_view {
+    padding: 20px;
+}
+
+.glass {
+    padding:10px;
+    backdrop-filter: blur(5px);
+    background-color: rgba(245, 245, 245, 0.5);
+}
+
+.tags {
+    margin: 4px;
+}
+
+
+
+.products_page table {
+    border: 1px solid #c3c3c3;
+}
+.products_page table tr {
+    border: 1px solid #c3c3c3;
+}
+.products_page table tr th,
+.products_page table tr td {
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+.products_page .add_product {
+    border: 1px solid #c3c3c3;
+}
+
+
+
+
+.orders_page table {
+    border: 1px solid #c3c3c3;
+    width: 100%;
+}
+.orders_page table tr {
+    border: 1px solid #c3c3c3;
+}
+.orders_page table tr th,
+.orders_page table tr td {
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+.orders_page .add_order {
+    border: 1px solid #c3c3c3;
+}
+.orders_page .order_details {
+    border: 1px solid #c3c3c3;
+}
+.orders_page .order_details .control-form{
+    background-color: #fff;
+    border: 1px solid #c3c3c3;
+    padding: 5px;
+    border-radius: 4px;
+}
+.orders_page .order_details .control-form .divider {
+    border-left: 1px solid #c3c3c3;
+    margin-left: 15px;
+    margin-right: 15px;
+}
