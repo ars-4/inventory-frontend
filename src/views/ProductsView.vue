@@ -89,15 +89,27 @@ export default defineComponent({
             msg: "Hello",
             products: [],
             products_qs: [],
-            product_stock: ""
+            product_stock: "",
+
+            user_role: false
         }
     },
 
     methods: {
         get_products: async function () {
+            if (localStorage.getItem('type') === 'admin') {
+                this.user_role = true
+            }
+            else {
+                this.user_role = false
+            }
             this.products = []
             this.products.qs = []
-            let data = await fetch(`${this.main_url}/products/`).then(res => {
+            let token = localStorage.getItem('token')
+            let data = await fetch(`${this.main_url}/products/`, {
+                method: 'get',
+                headers: {'Authorization': `Token ${token}`}
+            }).then(res => {
                 return res.json()
             })
             for (let i = 0; i < data.length; i++) {
@@ -165,9 +177,13 @@ export default defineComponent({
                     "product_id": product_id,
                     "stock": product_stock
                 }
+                let token = localStorage.getItem('token')
                 fetch(`${this.main_url}/product/stock/`, {
                     method: "post",
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Token ${token}`
+                    },
                     body: JSON.stringify(body)
                 }).then(() => { this.get_products() }).catch(err => { console.log(err) })
             }
@@ -195,9 +211,10 @@ export default defineComponent({
                     "purchase_price": product_purchase_price,
                     "stock": '0'
                 }
+                let token = localStorage.getItem('token')
                 fetch(`${this.main_url}/products/`, {
                     method: 'post',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'Authorization':`Token ${token}` },
                     body: JSON.stringify(body)
                 }).then(() => { this.get_products() }).catch(err => { console.log(err) })
                 e.target[0].value = ""
