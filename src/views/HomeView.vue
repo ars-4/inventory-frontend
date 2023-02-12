@@ -10,7 +10,7 @@
               <div class="card-header">
                 <h3>Add a user</h3>
               </div>
-              <form class="card-body">
+              <form class="card-body" @submit="add_user($event)">
                 <div class="row">
                   <div class="col-md-6">
                     <input type="text" class="form-control" placeholder="Username" required>
@@ -196,6 +196,44 @@ export default defineComponent({
           }
         }
       })
+    },
+
+    add_user: function(e) {
+      e.preventDefault()
+      let username = e.target[0].value;
+      let email = e.target[1].value;
+      let first_name = e.target[2].value;
+      let last_name = e.target[3].value;
+      let password = e.target[4].value;
+      let password2 = e.target[5].value;
+      let role = e.target[6].value;
+      let address = e.target[7].value;
+      if(password !== password2) {
+        alert("Passwords does not match")
+      }
+      else {
+        this.clear_form(e)
+        let token = localStorage.getItem('token')
+        fetch(`${this.main_url}/persons/`, {
+          method:'post',
+          headers: {'Authorization':`Token ${token}`, 'Content-Type':'application/json'},
+          body: JSON.stringify({
+            "first_name":first_name,
+            "last_name":last_name,
+            "email":email,
+            "username":username,
+            "password":password,
+            "role":role,
+            "address":address
+          })
+        })
+      }
+    },
+
+    clear_form: function(e) {
+      for(let i = 0; i <= 7; i++) {
+        e.target[i].value = ""
+      }
     }
 
   },

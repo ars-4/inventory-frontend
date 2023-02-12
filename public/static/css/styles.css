@@ -67,6 +67,10 @@ nav .navbar a.router-link-exact-active {
 .tags {
     margin: 4px;
 }
+.brdr {
+    padding: 7px;
+    border: 1px solid #c3c3c3;
+}
 
 
 
