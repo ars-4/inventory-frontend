@@ -2,7 +2,7 @@
     <div class="orders_page">
         <h1>Orders</h1>
         <div class="row">
-            <div class="col-md-7">
+            <div class="col-md-6">
                 <table class="glass">
                     <tr>
                         <th>ID</th>
@@ -40,7 +40,7 @@
                             @keyup="search_product($event)">
                         <br>
                         <span v-for="product in products_qs" :key="product.id" class="btn btn-secondary tags"
-                            @click="add_to_cart(product.id)">{{ product.title }}</span>
+                            @click="add_to_cart(product.id, product.title, product.price)">{{ product.title }}</span>
                         <br><br>
                         <button class="btn btn-primary">Add Order</button>
                     </form>
@@ -79,51 +79,25 @@
                     <p v-for="product in focused_order_products" :key="product">{{ product.product }}</p>
                     <br>
                     <button class="btn btn-primary">Print</button>
+                    <button class="btn btn-danger" @click="delete_order(focused_order.id)">Return Order</button>
+                </div>
+            </div>
+            <div class="col-md-2 glass" style="border:1px solid #c3c3c3">
+                <h1>Cart</h1>
+                <div class="brdr bg-danger text-light" v-for="item in cart_items" :key="item">
+                    <span @click="remove_cart_item(item[0])">{{ item[1] }}, {{ item[2] }}, {{ item[3] * item[1] }}</span>
                 </div>
             </div>
 
-            <!-- <div class="col-md-4" style="display:none">
-                <div class="glass order_details">
-                    <h3>Order Details</h3>
-                    <div class="control-form">
-                        <span>&nbsp;Customer Name</span>
-                        <span class="divider"></span>
-                        <span>{{ focused_order.customer_name }}</span>
-                    </div>
-                    <br>
-                    <div class="control-form">
-                        <div class="row">
-                            <div class="col-md-4">
-                                &nbsp;Description
-                                <span class="divider"></span>
-                            </div>
-                            <div class="col-md-8">{{ focused_order.description }}</div>
-                        </div>
-                    </div>
-                    <br>
-                    <div class="control-form">
-                        <span>&nbsp;Sales</span>
-                        <span class="divider"></span>
-                        <span>{{ focused_order.sale }}</span>
-                    </div>
-                    <br>
-                    <div class="control-form">
-                        <span>&nbsp;Purchase</span>
-                        <span class="divider"></span>
-                        <span>{{ focused_order.purchase }}</span>
-                    </div>
-                </div>
-            </div> -->
-
         </div>
     </div>
-    <div class="invoice">
+    <!-- <div class="invoice" style="display:none">
         <table>
             <tr>
                 <p></p>
             </tr>
         </table>
-    </div>
+    </div> -->
 </template>
 
 <script>
@@ -170,16 +144,9 @@ export default defineComponent({
                 return res.json()
             }).then(data => {
                 for (let i = 0; i < data.length; i++) {
-                    let customer_name = ""
-                    for (let j = 0; j < this.persons.length; j++) {
-                        if (this.persons[j].user_id === Number(data[i]['customer_name'])) {
-                            customer_name = this.persons[j]['username']
-                            console.log()
-                        }
-                    }
                     this.orders.push({
                         id: data[i]['id'],
-                        customer_name: customer_name,
+                        customer_name: data[i]['customer_name'],
                         description: data[i]['description'],
                         sale: data[i]['sale'],
                         purchase: data[i]['purchase'],
@@ -210,7 +177,8 @@ export default defineComponent({
                     else {
                         this.products.push({
                             id: data[i]['id'],
-                            title: data[i]['title']
+                            title: data[i]['title'],
+                            price:data[i]['sale_price']
                         })
                     }
                 }
@@ -227,10 +195,10 @@ export default defineComponent({
             }
         },
 
-        add_to_cart: function (id) {
+        add_to_cart: function (id, title, price) {
             if (this.cart_items.length === 0) {
                 let product_quantity = 1;
-                this.cart_items.push([id.toString(), product_quantity.toString()])
+                this.cart_items.push([id.toString(), product_quantity.toString(), title, price])
             }
             else {
                 let product_quantity = 1;
@@ -241,7 +209,14 @@ export default defineComponent({
                         break;
                     }
                 }
-                this.cart_items.push([id.toString(), product_quantity.toString()])
+                this.cart_items.push([id.toString(), product_quantity.toString(), title, price])
+            }
+        },
+        remove_cart_item: function(item) {
+            for(let i = 0; i < this.cart_items.length; i++) {
+                if(this.cart_items[i][0] === item) {
+                    this.cart_items.splice(i, 1)
+                }
             }
         },
 
@@ -250,6 +225,7 @@ export default defineComponent({
             let token = localStorage.getItem('token')
             for (let i = 0; i < this.orders.length; i++) {
                 if (order_id === this.orders[i]['id']) {
+                    this.focused_order['id'] = order_id
                     this.focused_order['customer_name'] = this.orders[i].customer_name
                     let description = this.orders[i].description
                     this.focused_order['description'] = description
@@ -281,7 +257,7 @@ export default defineComponent({
         get_persons: function () {
             this.persons = []
             let token = localStorage.getItem('token')
-            fetch(`${this.main_url}/persons/?user__groups=2`, {
+            fetch(`${this.main_url}/persons/?user__groups=3`, {
                 method: 'get',
                 headers: { 'Authorization': `Token ${token}` }
             }).then(res => { return res.json() }).then(data => {
@@ -302,7 +278,10 @@ export default defineComponent({
             e.preventDefault();
             let customer_name = e.target[0].value;
             e.target[0].value = "";
-            let cart = this.cart_items
+            let cart = []
+            for(let i = 0; i < this.cart_items.length; i++) {
+                cart.push([this.cart_items[i][0], this.cart_items[i][1]])
+            }
             if (cart.length > 0) {
                 let token = localStorage.getItem('token')
                 fetch(`${this.main_url}/orders/`, {
@@ -317,6 +296,18 @@ export default defineComponent({
                 })
             }
             this.cart_items = []
+        },
+
+        delete_order: function(order_id) {
+            let token = localStorage.getItem('token')
+            fetch(`${this.main_url}/order/?pk=${order_id}`, {
+                method:"get",
+                headers: {
+                    'Authorization': `Token ${token}`
+                }
+            }).then(() => {
+                this.get_orders()
+            })
         }
 
     },

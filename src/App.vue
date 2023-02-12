@@ -90,7 +90,6 @@ export default defineComponent({
           "password": this.password
         })
       }).then(res => { return res.json() }).then(data => {
-        console.log(data)
         if (data['error'] == 'false') {
           this.error = false
           localStorage.setItem('login', 'true')
@@ -98,6 +97,12 @@ export default defineComponent({
           localStorage.setItem('type', data['type'])
           if (localStorage.getItem('type') === 'admin') {
             this.user_role = true
+          }
+          else if(localStorage.getItem('type') === 'customer') {
+            localStorage.removeItem('token')
+            localStorage.setItem('login', 'false')
+            this.error_string = "Forbidden"
+            alert("Access Forbidden")
           }
           else {
             this.user_role = false

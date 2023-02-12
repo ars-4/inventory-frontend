@@ -171,7 +171,6 @@ export default defineComponent({
         },
         stock_data: function (method, product_id, product_stock) {
             if (Number(product_stock) > 0) {
-                console.log(method, product_id, product_stock)
                 let body = {
                     "method": method,
                     "product_id": product_id,
@@ -188,7 +187,7 @@ export default defineComponent({
                 }).then(() => { this.get_products() }).catch(err => { console.log(err) })
             }
             else {
-                console.log("Product Stock to change is 0")
+                alert("Product Stock to change is 0")
             }
         },
 
@@ -200,7 +199,7 @@ export default defineComponent({
             let product_sale_price = e.target[3].value;
             let product_purchase_price = e.target[4].value;
             if (product_sale_price <= 0 || product_purchase_price <= 0) {
-                console.log("Sale and Purchase Price Can't be zero")
+                alert("Sale and Purchase Price Can't be zero")
             }
             else {
                 let body = {
