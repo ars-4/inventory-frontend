@@ -106,6 +106,20 @@
             </div>
           </div>
         </div>
+        <br>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card bg-warning text-dark">
+              <div class="card-header">
+                <h3>Total Orders</h3>
+              </div>
+              <div class="card-body">
+                <span>{{ orders }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -125,6 +139,7 @@ export default defineComponent({
       user_role: false,
       msg: "Hello",
       balances: [],
+      orders: 0,
 
       expense: [],
       profit: [],
@@ -133,6 +148,15 @@ export default defineComponent({
     }
   },
   methods: {
+
+    get_orders: async function() {
+      await fetch(`${this.main_url}/orders/`, {
+        method: 'get',
+        headers: { 'Authorization': `Token ${localStorage.getItem('token')}` }
+      }).then(res => { return res.json() }).then(data => {
+        this.orders = data.length
+      });
+    },
 
     get_balances: function () {
       if (localStorage.getItem('type') === 'admin') {
@@ -240,7 +264,16 @@ export default defineComponent({
 
   beforeMount() {
     this.get_balances()
+    this.get_orders()
+  },
+
+  mounted() {
+    this.connection.socket.onmessage = (event) => {
+      this.get_orders()
+      this.get_balances()
+    }
   }
+
 })
 
 </script>

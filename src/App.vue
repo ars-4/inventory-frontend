@@ -6,13 +6,14 @@
         <router-link to="/products" class="btn">Products</router-link>
         <router-link to="/orders" class="btn">Orders</router-link>
         <a class="btn" style="float:right" @click="logout_user">Logout</a>
+        <span>{{ this.connection.status }}</span>
       </div>
     </nav>
     <br>
     <br>
     <br>
     <br>
-    <router-view class="main_view"></router-view>
+    <router-view class="main_view" ref="main_view"></router-view>
   </div>
 
   <div v-else>
@@ -34,12 +35,11 @@
       <div class="col-md-4"></div>
     </div>
   </div>
-
 </template>
 
 <script>
 
-import { defineComponent } from 'vue'
+import { defineComponent, getCurrentInstance } from 'vue'
 
 export default defineComponent({
 
@@ -72,6 +72,7 @@ export default defineComponent({
       }
       else {
         this.login = true
+        this.connection.connect()
         if (localStorage.getItem('type') === 'admin') {
           this.user_role = true
         }
@@ -98,7 +99,7 @@ export default defineComponent({
           if (localStorage.getItem('type') === 'admin') {
             this.user_role = true
           }
-          else if(localStorage.getItem('type') === 'customer') {
+          else if (localStorage.getItem('type') === 'customer') {
             localStorage.removeItem('token')
             localStorage.setItem('login', 'false')
             this.error_string = "Forbidden"
@@ -122,12 +123,29 @@ export default defineComponent({
       localStorage.removeItem('type')
       localStorage.setItem('login', 'false')
       this.check_user_login()
+    },
+
+    testOrders: function () {
+      const instance = getCurrentInstance();
+      if (instance) {
+        const { appContext } = instance;
+        const $eventBus = appContext.config.globalProperties.$eventBus;
+
+        $eventBus.$emit('getOrders');
+
+      }
     }
 
   },
 
   beforeMount() {
     this.check_user_login();
+  },
+  mounted() {
+    this.$watch(() => this.$route.path, () => {
+      // if (this.$route.path === '/orders') {this.testOrders();}
+      console.log("path changed")
+    })
   }
 
 })

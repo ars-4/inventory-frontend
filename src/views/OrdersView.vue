@@ -31,7 +31,7 @@
                         <!-- <input type="text" class="form-control" placeholder="Customer Name" required> -->
                         <select class="form-control" required>
                             <option value="">Customer</option>
-                            <option v-for="person in persons" :value="person.username" :key="person.id">{{
+                            <option v-for="person in customers" :value="person.username" :key="person.id">{{
                                 person.username
                             }} {{ person.address }}</option>
                         </select>
@@ -54,13 +54,21 @@
                         <span>{{ focused_order.customer_name }}</span>
                     </div>
                     <br>
+                    <div v-if="user_role" class="control-form">
+                        <span>&nbsp;Order Created by</span>
+                        <span class="divider"></span>
+                        <span v-if="focused_order.order_creator">{{ focused_order.order_creator.username }}</span>
+                    </div>
+                    <br>
                     <div class="control-form">
                         <div class="row">
                             <div class="col-4">
                                 &nbsp;Description
                                 <span class="divider"></span>
                             </div>
-                            <div class="col-8">{{ focused_order.description }}</div>
+                            <div class="col-8">
+                                <pre>{{ focused_order.description }}</pre>
+                            </div>
                         </div>
                     </div>
                     <br>
@@ -76,7 +84,10 @@
                         <span>{{ focused_order.purchase }}</span>
                     </div>
                     <br>
-                    <p v-for="product in focused_order_products" :key="product">{{ product.product }}</p>
+                    <div class="products_block">
+                        <span style="display:block" v-for="product in focused_order_products" :key="product">{{
+                            product.quantity }} x {{ product.product }} = {{ product.bill }}</span>
+                    </div>
                     <br>
                     <button class="btn btn-primary">Print</button>
                     <button class="btn btn-danger" @click="delete_order(focused_order.id)">Return Order</button>
@@ -113,6 +124,7 @@ export default defineComponent({
 
             user_role: false,
             persons: [],
+            customers: [],
 
             products: [],
             products_qs: [],
@@ -126,7 +138,7 @@ export default defineComponent({
 
     methods: {
 
-        get_orders: function () {
+        get_orders: async function () {
             if (localStorage.getItem('type') === 'admin') {
                 this.user_role = true
             }
@@ -135,26 +147,38 @@ export default defineComponent({
             }
             this.cart_items = []
             this.orders = []
-            this.get_persons()
+            this.orders_qs = []
+            await this.get_persons()
             let token = localStorage.getItem('token')
-            fetch(`${this.main_url}/orders/`, {
+            await fetch(`${this.main_url}/orders/`, {
                 method: 'get',
                 headers: { 'Authorization': `Token ${token}` }
             }).then(res => {
                 return res.json()
             }).then(data => {
                 for (let i = 0; i < data.length; i++) {
-                    this.orders.push({
+                    let temp_obj = {
                         id: data[i]['id'],
                         customer_name: data[i]['customer_name'],
                         description: data[i]['description'],
                         sale: data[i]['sale'],
                         purchase: data[i]['purchase'],
-                        order_products: data[i]['products']
-                    })
+                        order_products: data[i]['products'],
+                        order_creator: data[i]['order_creator']
+                    }
+                    for (let person of this.persons) {
+                        if (person.id == temp_obj.order_creator) {
+                            temp_obj.order_creator = {
+                                id: person.id,
+                                first_name: person.first_name,
+                                last_name: person.last_name,
+                                username: person.username
+                            }
+                        }
+                    }
+                    this.orders.push(temp_obj)
                 }
                 this.orders_qs = this.orders;
-                this.set_focused_order(1)
             }).then(() => {
                 this.get_products()
             })
@@ -178,7 +202,7 @@ export default defineComponent({
                         this.products.push({
                             id: data[i]['id'],
                             title: data[i]['title'],
-                            price:data[i]['sale_price']
+                            price: data[i]['sale_price']
                         })
                     }
                 }
@@ -212,56 +236,68 @@ export default defineComponent({
                 this.cart_items.push([id.toString(), product_quantity.toString(), title, price])
             }
         },
-        remove_cart_item: function(item) {
-            for(let i = 0; i < this.cart_items.length; i++) {
-                if(this.cart_items[i][0] === item) {
-                    this.cart_items.splice(i, 1)
-                }
+
+        remove_cart_item: function (item) {
+            const index = this.cart_items.findIndex((cartItem) => cartItem[0] === item);
+            if (index !== -1) {
+                this.cart_items.splice(index, 1);
             }
         },
 
-        set_focused_order: function (order_id) {
-            order_id = Number(order_id)
-            let token = localStorage.getItem('token')
-            for (let i = 0; i < this.orders.length; i++) {
-                if (order_id === this.orders[i]['id']) {
-                    this.focused_order['id'] = order_id
-                    this.focused_order['customer_name'] = this.orders[i].customer_name
-                    let description = this.orders[i].description
-                    this.focused_order['description'] = description
-                    this.focused_order['sale'] = this.orders[i].sale
-                    this.focused_order['purchase'] = this.orders[i].purchase
-                    this.focused_order['order_products'] = this.orders[i].order_products
-                    let special_id = this.orders[i].order_products
-                    for (let j = 0; j < this.orders[i].order_products.length; j++) {
-                        fetch(`${this.main_url}/order_products/${special_id}/`, {
-                            method: 'get',
-                            headers: { 'Authorization': `Token ${token}` }
-                        }).then(res => { return res.json() }).then(data => {
-                            for (let k = 0; k < this.products.length; k++) {
-                                if (this.products[k].id === data['product']) {
-                                    this.focused_order_products.push({
-                                        'product':this.products[k].title,
-                                        'quantity':data['quantity'],
-                                        'bill':data['sale_bill']
-                                    })
-                                }
+        set_focused_order: async function (order_id) {
+            order_id = Number(order_id);
+            const token = localStorage.getItem('token');
+            var order = this.orders.find((o) => o.id === order_id);
+            if (order) {
+                const { customer_name, description, sale, purchase, order_creator, order_products } = order;
+                this.focused_order = {
+                    id: order_id,
+                    customer_name,
+                    description,
+                    sale,
+                    purchase,
+                    order_creator,
+                    order_products
+                };
+                this.focused_order_products = []
+                for (let j = 0; j < order.order_products.length; j++) {
+                    await fetch(`${this.main_url}/order_products/${order.order_products[j]}/`, {
+                        method: 'get',
+                        headers: { 'Authorization': `Token ${token}` }
+                    }).then(res => { return res.json() }).then(data => {
+                        for (let k = 0; k < this.products.length; k++) {
+                            if (this.products[k].id === data['product']) {
+                                this.focused_order_products.push({
+                                    'product': this.products[k].title,
+                                    'quantity': data['quantity'],
+                                    'bill': data['sale_bill']
+                                })
                             }
-                        })
-                    }
-                    break;
+                        }
+                    })
                 }
             }
         },
 
         get_persons: function () {
             this.persons = []
+            this.customers = []
             let token = localStorage.getItem('token')
-            fetch(`${this.main_url}/persons/?user__groups=3`, {
+            fetch(`${this.main_url}/persons/`, {
                 method: 'get',
                 headers: { 'Authorization': `Token ${token}` }
             }).then(res => { return res.json() }).then(data => {
                 for (let i = 0; i < data.length; i++) {
+                    if (data[i]['user']['groups'].includes(3)) {
+                        this.customers.push({
+                            id: data[i]['id'],
+                            first_name: data[i]['first_name'],
+                            last_name: data[i]['last_name'],
+                            username: data[i]['user']['username'],
+                            user_id: data[i]['user']['id'],
+                            address: data[i]['address']
+                        })
+                    }
                     this.persons.push({
                         id: data[i]['id'],
                         first_name: data[i]['first_name'],
@@ -279,7 +315,7 @@ export default defineComponent({
             let customer_name = e.target[0].value;
             e.target[0].value = "";
             let cart = []
-            for(let i = 0; i < this.cart_items.length; i++) {
+            for (let i = 0; i < this.cart_items.length; i++) {
                 cart.push([this.cart_items[i][0], this.cart_items[i][1]])
             }
             if (cart.length > 0) {
@@ -291,17 +327,24 @@ export default defineComponent({
                         "customer_name": customer_name,
                         "order_products": cart
                     })
-                }).then(() => {
-                    this.get_orders();
+                }).then(async (res) => {
+                    let data = await res.json();
+                    if (data['error'] == "true") {
+                        return;
+                    }
+                    data = data['data']
+                    this.connection.send(JSON.stringify({
+                        "order": data
+                    }))
                 })
             }
             this.cart_items = []
         },
 
-        delete_order: function(order_id) {
+        delete_order: function (order_id) {
             let token = localStorage.getItem('token')
             fetch(`${this.main_url}/order/?pk=${order_id}`, {
-                method:"get",
+                method: "get",
                 headers: {
                     'Authorization': `Token ${token}`
                 }
@@ -314,7 +357,12 @@ export default defineComponent({
 
     beforeMount() {
         this.get_orders();
-    }
+    },
+    mounted() {
+        this.connection.socket.onmessage = (event) => {
+            this.get_orders();
+        }
+    },
 
 })
 

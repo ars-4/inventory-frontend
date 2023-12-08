@@ -23,17 +23,20 @@
                     </tr>
                     <tr v-for="product in products_qs" :key="product">
                         <td>{{ product.id }}</td>
-                        <td>{{ product.title }}</td>
+                        <td style="max-width: 200px;">{{ product.title }}</td>
                         <td>{{ product.sale_price }}</td>
                         <td>{{ product.purchase_price }}</td>
                         <td>{{ product.stock }}</td>
                         <td>
                             <form class="row" v-on:submit="set_product_stock($event)">
-                                <div class="col-md-8">
+                                <div class="col-md-5">
                                     <input type="number" class="form-control" value="0">
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-6">
+                                    <button class="btn btn-warning" @click="edit_product(product.id)">&#x270E;</button>
+                                    &nbsp;
                                     <button class="btn btn-primary" @click="stock_in(product.id)">+</button>
+                                    &nbsp;
                                     <button class="btn btn-danger" @click="stock_out(product.id)">-</button>
                                 </div>
                             </form>
@@ -108,7 +111,7 @@ export default defineComponent({
             let token = localStorage.getItem('token')
             let data = await fetch(`${this.main_url}/products/`, {
                 method: 'get',
-                headers: {'Authorization': `Token ${token}`}
+                headers: { 'Authorization': `Token ${token}` }
             }).then(res => {
                 return res.json()
             })
@@ -145,13 +148,19 @@ export default defineComponent({
             }
         },
 
-        show_error: function(string, type) {
-            if(type === 'error') {
+        show_error: function (string, type) {
+            if (type === 'error') {
                 console.log(string)
             }
             else {
                 console.log(string)
             }
+        },
+
+        edit_product: function (product_id) {
+            this.connection.send(JSON.stringify({
+                "product": product_id
+            }))
         },
 
         set_product_stock: function (e) {
@@ -169,7 +178,7 @@ export default defineComponent({
                 this.stock_data('stock_out', product_id, this.product_stock)
             }, 500);
         },
-        stock_data: function (method, product_id, product_stock) {
+        stock_data: async function (method, product_id, product_stock) {
             if (Number(product_stock) > 0) {
                 let body = {
                     "method": method,
@@ -177,14 +186,19 @@ export default defineComponent({
                     "stock": product_stock
                 }
                 let token = localStorage.getItem('token')
-                fetch(`${this.main_url}/product/stock/`, {
+                await fetch(`${this.main_url}/product/stock/`, {
                     method: "post",
-                    headers: { 
+                    headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Token ${token}`
                     },
                     body: JSON.stringify(body)
-                }).then(() => { this.get_products() }).catch(err => { console.log(err) })
+                }).then(() => {
+                    this.get_products();
+                    this.connection.send({
+                        "product": product_id
+                    })
+                }).catch(err => { console.log(err) })
             }
             else {
                 alert("Product Stock to change is 0")
@@ -213,7 +227,7 @@ export default defineComponent({
                 let token = localStorage.getItem('token')
                 fetch(`${this.main_url}/products/`, {
                     method: 'post',
-                    headers: { 'Content-Type': 'application/json', 'Authorization':`Token ${token}` },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Token ${token}` },
                     body: JSON.stringify(body)
                 }).then(() => { this.get_products() }).catch(err => { console.log(err) })
                 e.target[0].value = ""
@@ -221,6 +235,10 @@ export default defineComponent({
                 e.target[2].select[0]
                 e.target[3].value = 0
                 e.target[4].value = 0
+                this.connection.send({
+                    "product": body,
+                    "message": "note"
+                })
             }
         }
 
@@ -228,6 +246,11 @@ export default defineComponent({
 
     beforeMount() {
         this.get_products()
+    },
+    mounted() {
+        this.connection.socket.onmessage = (event) => {
+            this.get_products();
+        }
     }
 
 })
