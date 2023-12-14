@@ -1,0 +1,172 @@
+@import url('bootstrap.min.css');
+@import url('fonts/stylesheet.css');
+
+
+
+:root {
+    --theme-front:#42b983;
+    /* --theme-front: #f44336; */
+    --theme-back: #242424;
+
+    --bg-one: url('https://drscdn.500px.org/photo/95514389/m%3D900/v2?sig=5c283130302e69a89ea0cd61ff06b3d6f5657b197b26276d332f185187d77a1c');
+    --bg-clean-wooden-texture: url('https://drscdn.500px.org/photo/292509583/m%3D900/v2?sig=b79e684719d6c220743557ed8e56130cea7182a826c642bf6ebe3618ca5f1a1f');
+    --bg-spoiled-wooden-texture: url('https://drscdn.500px.org/photo/149496751/m%3D900/v2?sig=b964c46db729d8e2c5588f6f6ac9d0be5b01da816cd07ceb4cc5f8c0b023322b');
+    --bg-lonely-cupcake-on-wood:url('https://drscdn.500px.org/photo/1035388436/m%3D900/v2?sig=2204885874e8239dbfaae3876a83a40a1984f95d79a1d29769bccec2424e76a4');
+    --bg-coffee-beans: url('https://drscdn.500px.org/photo/131647331/m%3D900/v2?sig=f2766cce18976d4a6c12f02ddf64ab4604c9f860b49cca94d9dd9e3afa709bff');
+    --bg-colorful-cupcakes: url('https://drscdn.500px.org/photo/1045653380/m%3D900/v2?sig=cdf3dfd9366f3b8475e42dc8f0e75abfedf07c82264d1943aeafd911a46aefbc');
+    --bg-cheese-burger-minimal: url('https://drscdn.500px.org/photo/84265527/m%3D900/v2?sig=9f987bc37db5fe531c533f0fad02c898ffd998fa9695d06a7ae3c94829d1443f');
+    --bg-yellow-cheese-burger: url('https://drscdn.500px.org/photo/1037915572/m%3D900/v2?sig=660416eaa12bdebb5b015ab4b316ef0755c38c3c057b88fee5a53e20b5a791ea');
+    --bg-dark-laptop-on-table-minimal: url('https://drscdn.500px.org/photo/1071759335/m%3D900/v2?sig=b49d060f890c99cb504d5427f250ace48785570203a17e8b4d35685029437ca2');
+
+    --bg-3d-green: url('https://fffuel.co/images/dddepth/dddepth-337.jpg');
+}
+
+
+body {
+    font-family: Rubik;
+    /* background-image: url('../images/Ab-Pyr.jpg'); */
+    background-image: var(--bg-3d-green);
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+
+.login {
+    display: block;
+    padding: 30px;
+}
+.login .content {
+    padding: 60px;
+}
+
+
+nav {
+    background-color: #242424;
+    padding: 20px;
+    position: fixed;
+    top:0;
+    left:0;
+    width: 100%;
+    z-index: 1;
+}
+nav .navbar {
+    display: flex;
+    justify-content: left;
+}
+nav .navbar a {
+    background-color: #242424;
+    color: var(--theme-front);
+    margin-left: 14px;
+}
+nav .navbar a:hover {
+    background-color: var(--theme-front);
+    color: #242424;
+}
+nav .navbar a.router-link-exact-active {
+    color: #242424;
+    background-color: var(--theme-front);
+}
+
+
+
+.main_view {
+    padding: 20px;
+}
+
+.glass {
+    padding:10px;
+    backdrop-filter: blur(25px);
+    background-color: rgba(245, 245, 245, 0.5);
+}
+
+.tags {
+    margin: 4px;
+}
+.brdr {
+    padding: 7px;
+    border: 1px solid #c3c3c3;
+}
+
+
+
+.products_page table {
+    border: 1px solid #c3c3c3;
+    width: 100%;
+}
+.products_page table tr {
+    border: 1px solid #c3c3c3;
+}
+.products_page table tr th,
+.products_page table tr td {
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+.products_page .add_product {
+    border: 1px solid #c3c3c3;
+}
+
+
+
+
+.orders_page table {
+    border: 1px solid #c3c3c3;
+    width: 100%;
+}
+.orders_page table tr {
+    border: 1px solid #c3c3c3;
+}
+.orders_page table tr th,
+.orders_page table tr td {
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+.orders_page .add_order {
+    border: 1px solid #c3c3c3;
+}
+.orders_page .order_details {
+    border: 1px solid #c3c3c3;
+}
+.orders_page .order_details .control-form{
+    background-color: #fff;
+    border: 1px solid #c3c3c3;
+    padding: 5px;
+    border-radius: 4px;
+}
+.orders_page .order_details .control-form .divider {
+    border-left: 1px solid #c3c3c3;
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+
+
+
+.invoice {
+    display: none;
+}
+
+@media print {
+    .invoice {
+        display: initial;
+    }
+    .orders_page,
+    nav {
+        display: none;
+    }
+
+    @page {
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+}
+
+
+
+
+
+
+
